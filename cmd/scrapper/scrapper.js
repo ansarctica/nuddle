@@ -142,7 +142,7 @@ function mergeSessionsSameNameAndType(sessions) {
 
 
 async function setUp() {
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
   log('Opened browser and navigating to course catalog...');
   await page.goto('https://registrar.nu.edu.kz/course-catalog', { waitUntil: 'domcontentloaded' });

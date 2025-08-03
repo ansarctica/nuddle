@@ -12,6 +12,8 @@ const (
 	slotsPerDay = 32
 	totalSlots  = days * slotsPerDay
 	slotMin     = 30
+
+	maxPlans = 50
 )
 
 type SessReq struct {
@@ -53,17 +55,17 @@ type Plan struct {
 	Summary     Summary      `json:"summary"`
 }
 
-type autoscheduleResponse struct {
+type SolveResponse struct {
 	OK         bool   `json:"ok"`
 	Message    string `json:"message,omitempty"`
 	ChosenPlan *Plan  `json:"chosenPlan,omitempty"`
 	AllOptimal []Plan `json:"allOptimal,omitempty"`
 }
 
-func Solve(req *Request) (*autoscheduleResponse, error) {
+func Solve(req *Request) (*SolveResponse, error) {
 	busyMask, err := bitsFromB64(req.BusyBitsB64)
 	if err != nil {
-		return &autoscheduleResponse{OK: false, Message: "bad busy bits"}, nil
+		return &SolveResponse{OK: false, Message: "bad busy bits"}, nil
 	}
 
 	type typeInfo struct {
@@ -111,15 +113,16 @@ func Solve(req *Request) (*autoscheduleResponse, error) {
 		}
 	}
 	if len(courses) == 0 {
-		return &autoscheduleResponse{OK: false, Message: "no course types to schedule"}, nil
+		return &SolveResponse{OK: false, Message: "no course types to schedule"}, nil
 	}
 
+	bestBusy := math.MaxInt32
 	bestGap := math.MaxInt32
 	var bestPlans []Plan
 
 	var chosenAll [days]uint32
 	var chosenAtt [days]uint32
-	var chosenUnatt [days]uint32
+	var chosenUn [days]uint32
 	var picks []Assignment
 
 	var dfs func(ci, ti int)
@@ -134,21 +137,33 @@ func Solve(req *Request) (*autoscheduleResponse, error) {
 
 	dfs = func(ci, ti int) {
 		if ci >= len(courses) {
-			gap := computeGapBetweenAttended(chosenAtt, chosenUnatt, busyMask)
 
-			if gap < bestGap {
-				bestGap = gap
+			busyMin := overlapMinutes(chosenAll, busyMask)
+			gapMin := computeGapBetweenAttendedWithFallback(chosenAtt, chosenUn, busyMask, chosenAll)
+
+			better := false
+			if busyMin < bestBusy {
+				better = true
+			} else if busyMin == bestBusy && gapMin < bestGap {
+				better = true
+			}
+
+			if better {
+				bestBusy = busyMin
+				bestGap = gapMin
 				bestPlans = bestPlans[:0]
 			}
-			if gap == bestGap {
-				p := Plan{
-					Assignments: append([]Assignment(nil), picks...),
-					Summary: Summary{
-						BusyOverlapMin: 0,
-						GapMin:         gap,
-					},
+			if busyMin == bestBusy && gapMin == bestGap {
+				if len(bestPlans) < maxPlans {
+					p := Plan{
+						Assignments: append([]Assignment(nil), picks...),
+						Summary: Summary{
+							BusyOverlapMin: busyMin,
+							GapMin:         gapMin,
+						},
+					}
+					bestPlans = append(bestPlans, p)
 				}
-				bestPlans = append(bestPlans, p)
 			}
 			return
 		}
@@ -174,22 +189,19 @@ func Solve(req *Request) (*autoscheduleResponse, error) {
 		for _, ix := range cands {
 			m := typ.sessMasks[ix]
 
-			if overlaps(m, busyMask) {
-				continue
-			}
 			if overlaps(m, chosenAll) {
 				continue
 			}
 
 			prevAll := chosenAll
 			prevAtt := chosenAtt
-			prevUn := chosenUnatt
+			prevUn := chosenUn
 
 			orInto(&chosenAll, m)
 			if typ.attendImportant {
 				orInto(&chosenAtt, m)
 			} else {
-				orInto(&chosenUnatt, m)
+				orInto(&chosenUn, m)
 			}
 
 			picks = append(picks, Assignment{
@@ -208,33 +220,50 @@ func Solve(req *Request) (*autoscheduleResponse, error) {
 			picks = picks[:len(picks)-1]
 			chosenAll = prevAll
 			chosenAtt = prevAtt
-			chosenUnatt = prevUn
+			chosenUn = prevUn
 		}
 	}
 
 	dfs(0, 0)
 
 	if len(bestPlans) == 0 {
-		return &autoscheduleResponse{OK: false, Message: "no plan found"}, nil
+		return &SolveResponse{OK: false, Message: "no plan found"}, nil
 	}
-	return &autoscheduleResponse{
+	out := bestPlans
+	if len(out) > maxPlans {
+		out = out[:maxPlans]
+	}
+	return &SolveResponse{
 		OK:         true,
-		ChosenPlan: &bestPlans[0],
-		AllOptimal: bestPlans,
+		ChosenPlan: &out[0],
+		AllOptimal: out,
 	}, nil
 }
 
-func computeGapBetweenAttended(A, U, B [days]uint32) int {
+func overlapMinutes(a, b [days]uint32) int {
+	mins := 0
+	for d := 0; d < days; d++ {
+		mins += popcnt32(a[d]&b[d]) * slotMin
+	}
+	return mins
+}
+
+func computeGapBetweenAttendedWithFallback(A, U, B, All [days]uint32) int {
 	total := 0
 	for d := 0; d < days; d++ {
-		ad := A[d]
-		if ad == 0 {
+		anchors := A[d]
+		if anchors == 0 {
+			anchors = All[d]
+		}
+		if anchors == 0 {
 			continue
 		}
-		runs := runsFromMask(ad)
+
+		runs := runsFromMask(anchors)
 		if len(runs) < 2 {
 			continue
 		}
+
 		fill := U[d] | B[d]
 
 		for i := 0; i+1 < len(runs); i++ {
