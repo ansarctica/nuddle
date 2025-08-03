@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" class="ec-auto-dark">
+<head>
+  <meta charset="utf-8" />
+  <title>nuddle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@event-calendar/build@4.5.0/dist/event-calendar.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/@event-calendar/build@4.5.0/dist/event-calendar.min.js"></script>
+
+  <link rel="stylesheet" href="./static/styles.css" />
+  <script defer src="./static/main.js"></script>
+</head>
+<body>
+  <header class="site-header"><h1>nuddle</h1>
+    <div class="header-actions">
+    <a href="https://github.com/ansarctica/nuddle" target="_blank" rel="noopener noreferrer" title="GitHub">
+      <img src="./static/github-mark.svg" alt="GitHub" />
+    </a>
+    <a href="https://t.me/ansarcticjrnl" target="_blank" rel="noopener noreferrer" title="Telegram">
+      <img src="./static/Telegram_logo.svg" alt="Telegram" />
+    </a>
+  </div>
+</header>
+
+  <div class="layout">
+    <aside class="sidebar" data-courses-url="/api/courses/names">
+      <label class="field-label" for="course-search">Find course</label>
+      <input id="course-search" type="text" placeholder="Start typing…" autocomplete="off" />
+      <ul id="course-suggestions" class="typeahead" hidden></ul>
+
+      <h2 style="margin:1rem 0 .25rem; font-size:1.6rem;">Saved</h2>
+      <ul id="saved-courses"></ul>
+    </aside>
+
+    <main class="main">
+      <div class="calendar-box">
+        <div id="calendar"></div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+

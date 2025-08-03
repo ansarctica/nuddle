@@ -1,0 +1,16 @@
+
+data/
+*.gob
+*.json
+
+.DS_Store
+
+cmd/scrapper/node_modules/
+cmd/scrapper/package-lock.json
+
+logs/
+*.log
+
+*.svg
+.vscode/
+

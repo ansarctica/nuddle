@@ -1,0 +1,253 @@
+* { box-sizing: border-box; }
+
+
+
+:root {
+  --sidebar-w: 350px;
+  --sidebar-h:900px;
+  --hour-row-h: 42px;
+  --surface-bg: var(--ec-bg-color, #fff);
+  --surface-text: var(--ec-text-color, #111);
+  --surface-border: var(--ec-border-color, #cbd5e1);
+  --surface-radius: var(--ec-border-radius, 4px);
+
+  --layout-bg: #fafafa;
+
+  --header-bg: #111;
+  --header-fg: #fff;
+
+  --sidebar-bg: var(--surface-bg);
+  --sidebar-fg: var(--surface-text);
+  --sidebar-border: var(--surface-border);
+  --sidebar-radius: 0px;       
+
+  --calendar-bg: var(--surface-bg);
+  --calendar-fg: var(--surface-text);
+  --calendar-border: var(--surface-border);
+  --calendar-radius: var(--surface-radius);
+
+  --fab-bg: #fff;
+  --fab-fg: #111;
+  --fab-border: #000b1f;
+  --fab-hover-bg: #f3f4f6;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--layout-bg);
+  overflow: hidden;
+  color: var(--surface-text);
+}
+
+
+.site-header {
+  height: 42px;
+  background: var(--header-bg);
+  color: var(--header-fg);
+  display:flex;
+  align-items:center;
+  padding:0 .75rem;
+}
+.site-header .brand { display:flex; align-items:center; gap:.5rem; }
+.site-header .brand img { height:24px; width:auto; display:block; }
+.site-header h1 { font-size:.95rem; margin:0; }
+.site-header .header-actions {
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.site-header .header-actions a {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px; height:28px; border-radius:4px;
+}
+.site-header .header-actions a img {
+  display:block; width:20px; height:20px; opacity:.9;
+}
+.site-header .header-actions a:hover img { opacity:1; }
+
+
+.layout { display:flex; height:calc(100vh - 32px); padding:1rem 1rem 0; gap:1rem; overflow:hidden; align-items:flex-start; }
+.main { flex:1; min-height:0; }
+.calendar-box { flex:1; background:transparent; border:none; }
+
+
+.sidebar {
+  width: var(--sidebar-w);
+  height: var(--sidebar-h);
+  flex: 0 0 auto;
+  padding: .75rem 1rem;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  background: var(--sidebar-bg);
+  color: var(--sidebar-fg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--sidebar-radius);
+}
+
+.sidebar .field-label { display:block; margin:0 0 .35rem; font-weight:600; opacity:.85; }
+#course-search{
+  width:100%; padding:.5rem .6rem;
+  border:1px solid var(--sidebar-border);
+  border-radius:var(--sidebar-radius);
+  background:var(--sidebar-bg);
+  color:var(--sidebar-fg);
+  outline:none;
+}
+#course-search:focus{ box-shadow:0 0 0 2px rgba(0,0,0,.05); }
+
+.typeahead{
+  list-style:none; padding:0; margin:.5rem 0 0;
+  border:1px solid var(--sidebar-border);
+  border-radius:var(--sidebar-radius);
+  max-height:280px; overflow:auto;
+  background:var(--sidebar-bg);
+}
+.typeahead[hidden]{ display:none; }
+.typeahead li{ padding:.45rem .6rem; cursor:pointer; border-bottom:1px solid var(--sidebar-border); }
+.typeahead li:last-child{ border-bottom:0; }
+.typeahead li[aria-selected="true"], .typeahead li:hover{ background:rgba(0,0,0,.04); }
+.typeahead mark{ background:transparent; color:inherit; font-weight:700; }
+
+
+#saved-courses{ list-style:none; padding:0; margin:.75rem 0 0; border:0; }
+#saved-courses li.empty-note{ opacity:.6; padding:.25rem .35rem; }
+
+.course-card{ border-bottom:1px solid var(--sidebar-border); }
+.course-card:last-child{ border-bottom:0; }
+
+.course-card .card-head{
+  display:flex; align-items:center; gap:.5rem; padding:.45rem 0;
+}
+.course-card .swatch{
+  width:14px; height:14px; border-radius:3px;
+  border:1px solid var(--sidebar-border); background:#f3f4f6; flex:0 0 14px;
+}
+.course-card .name{ flex:1; }
+
+.course-card .rm{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:18px; height:18px; padding:0;
+  border:1px solid var(--sidebar-border);
+  border-radius:50%;
+  background:var(--sidebar-bg); color:var(--sidebar-fg);
+  line-height:16px; font-size:12px; cursor:pointer;
+}
+
+.course-card .card-panel{
+  margin:.25rem 0 .75rem; padding:.6rem;
+  border:1px solid var(--sidebar-border);
+  border-radius:var(--sidebar-radius);
+  background:var(--sidebar-bg);
+}
+
+.course-card .combo-row{ margin:.5rem 0; }
+.course-card .field-label{ display:block; font-weight:700; margin:0 0 .35rem; opacity:.95; }
+.course-card .combo-select{
+  width:100%; padding:.5rem .8rem;
+  border:1px solid var(--sidebar-border);
+  border-radius:var(--sidebar-radius);
+  background:var(--sidebar-bg); color:var(--sidebar-fg);
+  outline:none; appearance:none; box-shadow:none;
+  background-image: linear-gradient(to bottom,transparent,transparent),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat,no-repeat; background-position:right .5rem center; background-size:14px 14px;
+}
+.course-card .combo-select:focus{ box-shadow:0 0 0 2px rgba(0,0,0,.05); }
+
+.sidebar .course-card { max-width: 316px; width: 100%; }
+.sidebar .course-card .card-panel { width: 100%; }
+
+.attend-toggle-type{
+  display: inline-block; margin-left: 8px; font-size: 11px; line-height: 1;
+  background: transparent; border: 0; cursor: pointer;
+  color: #333; opacity: .7; text-shadow:none; filter:none;
+}
+.combo-row:hover .attend-toggle-type{ opacity:.95; text-decoration: underline; }
+.attend-toggle-type[aria-pressed="false"]{ opacity:1; color:#b00020; text-decoration:none; }
+
+
+
+.calendar-box,
+.calendar-box * { box-shadow:none !important; }
+
+.calendar-box .ec {
+  width:100%;
+  height:900px;
+  background: var(--calendar-bg);
+  color: var(--calendar-fg);
+  border: none;
+}
+.calendar-box .ec-body { overflow-x:hidden !important; }
+.ec-body.ec-with-scroll { overflow-y:auto !important; }
+.ec-toolbar, .ec-allday-head, .ec-allday { display:none !important; }
+.ec-today, .ec-day-head.ec-today { background:inherit !important; color:inherit !important; }
+.ec-time-grid .ec-time, .ec-time-grid .ec-line { height:var(--hour-row-h); line-height:var(--hour-row-h); }
+.calendar-box .ec-content::-webkit-scrollbar { display:none; }
+
+
+
+.ec-event.busy, .ec-event.type-busy {
+  background:red !important; color:#fff !important; border:none !important;
+  position:relative; cursor:pointer;
+}
+
+.ec-event.busy .close-btn, .ec-event.type-busy .close-btn{
+  display:none; position:absolute; top:2px; right:3px;
+  width:14px; height:14px; line-height:14px; text-align:center; font-size:12px;
+  background:rgba(255,255,255,.85); color:red; border-radius:50%; user-select:none;
+}
+.ec-event.busy:hover .close-btn, .ec-event.type-busy:hover .close-btn { display:block; }
+
+
+
+.ec-event.course { pointer-events:auto; position:relative; }
+
+.ec-event.course .ec-event-title,
+.ec-event.course .ec-title { color:#fff !important; opacity:1 !important; }
+
+.ec-event.course.pinned::after{
+  content:"📌";
+  position:absolute;
+  top:2px; right:3px;
+  font-size:12px; line-height:1;
+  pointer-events:none;
+}
+
+.ec-event.course.pinned{ outline:1.5px solid rgba(0,0,0,.5); outline-offset:-1px; }
+
+
+.autoscheduler-wrap{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:8px;
+}
+.autoscheduler-fab{
+  width:42px; height:42px; border-radius:50%;
+  border:1px solid var(--fab-border);
+  background: var(--fab-bg);
+  color: var(--fab-fg);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:20px; line-height:1; cursor:pointer; user-select:none;
+}
+.autoscheduler-fab:hover{ background:var(--fab-hover-bg); }
+.autoscheduler-fab:disabled{ opacity:.6; cursor:default; }
+.autoscheduler-fab.loading{ animation:spin 1s linear infinite; }
+@keyframes spin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+.autoscheduler-pop{
+  background:var(--calendar-bg);
+  color:var(--calendar-fg);
+  border:1px solid var(--calendar-border);
+  border-radius:6px; padding:6px 8px; font-size:12px; max-width:260px;
+}
